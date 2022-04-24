@@ -17,18 +17,10 @@ parser.add_argument('--edge-list', help='Input file',
                     default='automotive_5.net')
 
 
-def read_line(path: str) -> str:
-    with open(path) as f:
-        content = f.readline()
-    return content
-
-
-def read_bipartite_graph(path: str) -> Tuple[Dict[str, int], nx.Graph]:
+def read_bipartite_graph(path: str) -> nx.Graph:
     print('Reading graph...')
-    line = read_line(path)
-    node_info = eval(line.replace('#', '').strip())
     graph = bipartite.read_edgelist(path)
-    return node_info, graph
+    return graph
 
 
 def plot_distribution(values: List[int], title: str, xlabel: str, ylabel: str,
@@ -41,11 +33,12 @@ def plot_distribution(values: List[int], title: str, xlabel: str, ylabel: str,
     plt.show()
 
 
-def degree_distribution(node_info: Dict[str, int], graph: nx.Graph) -> None:
+def degree_distribution(graph: nx.Graph) -> None:
     degree = graph.degree
-    reviewers = range(1, node_info['reviewers']+1)
-    bound = node_info['reviewers']+node_info['products']
-    products = range(node_info['reviewers']+3, bound+3)
+    rev_nodes, prod_nodes = bipartite.sets(graph)
+    reviewers = range(1, len(rev_nodes)+1)
+    bound = len(rev_nodes) + len(prod_nodes) + 1
+    products = range(len(rev_nodes)+1, bound)
     reviewers_degree = [degree(str(i)) for i in reviewers]
     products_degree = [degree(str(i)) for i in products]
 
@@ -55,7 +48,7 @@ def degree_distribution(node_info: Dict[str, int], graph: nx.Graph) -> None:
                       'Degree', 'Number of Nodes', 'plots/product_degree.png')
 
 
-def analysis(node_info: Dict[str, int], graph: nx.Graph) -> None:
+def analysis(graph: nx.Graph) -> None:
     print('Analyzing graph...')
     # average shortest path length
     avg_path = nx.average_shortest_path_length(graph)
@@ -66,12 +59,19 @@ def analysis(node_info: Dict[str, int], graph: nx.Graph) -> None:
     avg_cc = bipartite.average_clustering(graph)
     print('Average clustering coefficient:', avg_cc)
     # degree distribution
-    degree_distribution(node_info, graph)
+    degree_distribution(graph)
+    # closeness centrality
+    cc = bipartite.closeness_centrality(graph, graph.nodes())
+
+    # bc = bipartite.betweenness_centrality(graph, graph.nodes())
+    # dc = bipartite.degree_centrality(graph, graph.nodes())
+    # density = bipartite.density(graph, graph.nodes())
+    # redundancy = bipartite.redundancy(graph, graph.nodes)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     file_path = os.path.join(args.input_dir, args.edge_list)
     # file_path = 'dataset/automotive_5.net'
-    node_information, bi_graph = read_bipartite_graph(file_path)
-    analysis(node_information, bi_graph)
+    bi_graph = read_bipartite_graph(file_path)
+    analysis(bi_graph)

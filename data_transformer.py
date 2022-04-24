@@ -44,7 +44,7 @@ def reviewers_products(df: pd.DataFrame) -> Tuple[Dict[str | int, int],
                                                   Dict[str | int, int]]:
     reviewers = df['reviewerID'].unique()
     products = df['asin'].unique()
-    num_reviewers = len(reviewers)+2
+    num_reviewers = len(reviewers)
 
     reviewers_nodes = {r: i+1 for i, r in enumerate(reviewers)}
     products_nodes = {p: num_reviewers+i+1 for i, p in enumerate(products)}
@@ -61,15 +61,14 @@ def build_netfile(df: pd.DataFrame, reviewers_nodes: Dict[str | int, int],
     products_mapped = products_mapped[sorted_indices]
 
     net_file_list = [f'{r} {p}' for r, p in zip(rev_mapped, products_mapped)]
-    first_line = '# {\'reviewers\': ' + str(len(reviewers_nodes))
-    first_line += ', \'products\': ' + str(len(products_nodes)) + '}'
-    net_file = first_line + '\n' + '\n'.join(net_file_list)
+    net_file = '\n'.join(net_file_list)
     return net_file
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     input_path = os.path.join(args.dataset_dir, args.input_file)
+    # input_path = 'dataset/reviews_Automotive_5.json.gz'
     df_am = read_data(input_path)
     df_am = df_am.dropna()
     # reviewers node and products node mappings
