@@ -4,12 +4,23 @@ from typing import Iterator, Tuple
 import pandas as pd
 import torch
 from tqdm import tqdm
-import torch.nn as nn
-import torch.nn.functional as F
 import dgl
 import numpy as np
-from preprocessing.cleaning import DGraph
 import scipy.sparse as sp
+from pickle import dump, load
+
+
+DGraph = Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+
+
+def load_pickle(path: str) -> object:
+    with open(path, 'rb') as f:
+        return load(f)
+
+
+def write_pickle(obj: object, path: str) -> None:
+    with open(path, 'wb') as f:
+        dump(obj, f)
 
 
 def parse(path: str) -> Iterator[dict]:
@@ -39,12 +50,14 @@ def build_graph(dgraph: DGraph) -> dgl.DGLGraph:
     return g
 
 
-def train_test_split(g: dgl.DGLGraph, test_size: float):
+def train_test_split(g: dgl.DGLGraph, test_split: float
+                     ) -> Tuple[dgl.DGLGraph, dgl.DGLGraph, dgl.DGLGraph,
+                                dgl.DGLGraph, dgl.DGLGraph]:
     u, v = g.edges()
 
     edge_ids = np.arange(g.number_of_edges())
     edge_ids = np.random.permutation(edge_ids)
-    test_size = int(len(edge_ids) * 0.1)
+    test_size = int(len(edge_ids) * test_split)
     test_pos_u, test_pos_v = u[edge_ids[:test_size]], v[edge_ids[:test_size]]
     train_pos_u, train_pos_v = u[edge_ids[test_size:]], v[edge_ids[test_size:]]
 
