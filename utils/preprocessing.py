@@ -1,5 +1,5 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
-from preprocessing import utils
+from utils import utils
 from typing import Dict, Tuple
 import pandas as pd
 import numpy as np
@@ -63,7 +63,9 @@ def get_node_data(df: pd.DataFrame, asin_map: Dict[str, int]
 
 def graph_processing(data_path: str, meta_file: str
                      ) -> Tuple[DGraph, pd.DataFrame]:
+    print('\n\nLoading Data...')
     df = utils.read_data(os.path.join(data_path, meta_file))
+    print('\n\nPreprocessing Graph...')
     df = df.dropna().reset_index(drop=True)
     # Finds Niche Category of each product
     df['niche'] = df.categories.apply(lambda x: x[0][-1])
@@ -75,6 +77,7 @@ def graph_processing(data_path: str, meta_file: str
     edges_src = torch.from_numpy(edges['asin'].to_numpy())
     edges_dst = torch.from_numpy(edges['also_bought'].to_numpy())
     dgraph = (node_features, node_labels, edges_src, edges_dst)
+    print('\n\nGraph processing completed!')
     return dgraph, edges
 
 
