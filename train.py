@@ -93,7 +93,7 @@ if __name__ == '__main__':
     META_FILE = 'meta_Automotive.json.gz'
     ARTIFACTS_PATH = 'artifacts/'
     AGGREGATOR = 'mean'
-    LAYERS_UNITS = [16]#, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+    LAYERS_UNITS = [16]
     # data_path = DATA_PATH
     # meta_file = META_FILE
     train(DATA_PATH, META_FILE, epochs=100, artifacts_path=ARTIFACTS_PATH,
