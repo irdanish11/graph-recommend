@@ -1,4 +1,4 @@
-from dgl.nn import SAGEConv
+from dgl.nn.pytorch.conv import SAGEConv
 import torch.nn as nn
 import torch.nn.functional as F
 import dgl.function as fn
@@ -10,15 +10,17 @@ class GraphSAGE(nn.Module):
     Source: https://docs.dgl.ai/en/0.4.x/_modules/dgl/nn/pytorch/conv/sageconv.html
     """
 
-    def __init__(self, in_feats, h_feats):
+    def __init__(self, layers, aggregator):
         super(GraphSAGE, self).__init__()
-        self.conv1 = SAGEConv(in_feats, h_feats, 'mean')
-        self.conv2 = SAGEConv(h_feats, h_feats, 'mean')
+        sage_layers = []
+        for i in range(len(layers) - 1):
+            sage_layers.append(SAGEConv(layers[i], layers[i+1], aggregator))
+        self.sage_conv = nn.ModuleList(sage_layers)
 
     def forward(self, g, in_feat):
-        h = self.conv1(g, in_feat)
-        h = F.relu(h)
-        h = self.conv2(g, h)
+        h = in_feat
+        for SConv in self.sage_conv:
+            h = F.relu(SConv(g, h))
         return h
 
 
